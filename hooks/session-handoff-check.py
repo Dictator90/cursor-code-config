@@ -35,20 +35,31 @@ MAX_AGE_HOURS = 168  # 7 days
 def main() -> int:
     cwd = Path.cwd()
     legacyagent_dir = cwd / ".cursor"
+    handoffs_dir = legacyagent_dir / "handoffs"
+    handoff_index = handoffs_dir / "INDEX.md"
+
+    # Bootstrap handoff structure so context files are visible early.
+    legacyagent_dir.mkdir(parents=True, exist_ok=True)
+    handoffs_dir.mkdir(parents=True, exist_ok=True)
+    if not handoff_index.exists():
+        handoff_index.write_text(
+            "# Handoffs Index\n\n"
+            "Append one line per handoff file:\n"
+            "- YYYY-MM-DD_HH-MM_<session-short-id>.md - short topic summary\n",
+            encoding="utf-8",
+        )
 
     # Reset per-session markers (so Stop hook can remind again this session)
-    if legacyagent_dir.exists():
-        for marker in (".handoff-reminded", ".session-start"):
-            m = legacyagent_dir / marker
-            if m.exists():
-                m.unlink()
-        # Re-create session-start marker with current time
-        (legacyagent_dir / ".session-start").touch()
+    for marker in (".handoff-reminded", ".session-start"):
+        m = legacyagent_dir / marker
+        if m.exists():
+            m.unlink()
+    # Re-create session-start marker with current time
+    (legacyagent_dir / ".session-start").touch()
 
     lines: list[str] = []
 
     # Check for handoffs - new multi-session format first
-    handoffs_dir = legacyagent_dir / "handoffs"
     handoff_old = legacyagent_dir / "HANDOFF.md"
     found_handoffs: list[tuple[float, Path]] = []
 

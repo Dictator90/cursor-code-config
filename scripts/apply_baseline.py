@@ -14,6 +14,12 @@ HANDOFF_RULE = """# Session handoff
 - Include: goal, completed work, blockers, next action.
 """
 
+HANDOFF_INDEX = """# Handoffs Index
+
+Append one line per handoff file:
+- YYYY-MM-DD_HH-MM_<session-short-id>.md - short topic summary
+"""
+
 
 def write_if_missing(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -31,6 +37,7 @@ def main() -> int:
     root = Path.cwd()
     write_if_missing(root / ".cursor/rules/cursor-only-baseline.md", BASELINE_RULE)
     write_if_missing(root / ".cursor/rules/session-handoff.md", HANDOFF_RULE)
+    write_if_missing(root / ".cursor/handoffs/INDEX.md", HANDOFF_INDEX)
     ensure_contains(root / ".npmrc", "min-release-age=7")
     ensure_contains(root / "uv.toml", 'exclude-newer = "7 days"')
     print("Baseline applied.")
