@@ -1,0 +1,45 @@
+{
+  "name": "cursor-config-hardening",
+  "version": "1.0.0",
+  "description": "Cursor-only hardening plugin with deterministic safety and supply-chain checks.",
+  "author": {
+    "name": "mb-team",
+    "email": "mb-team@users.noreply.github.com",
+    "url": "https://github.com/AnastasiyaW/claude-code-config"
+  },
+  "homepage": "https://github.com/AnastasiyaW/claude-code-config",
+  "repository": "https://github.com/AnastasiyaW/claude-code-config",
+  "license": "MIT",
+  "keywords": [
+    "cursor",
+    "hardening",
+    "deterministic",
+    "supply-chain",
+    "agent-config"
+  ],
+  "skills": "./skills/",
+  "commands": "./.cursor/commands/",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json",
+  "apps": "./.app.json",
+  "interface": {
+    "displayName": "Cursor Config Hardening",
+    "shortDescription": "Apply and verify Cursor-only hardening baseline.",
+    "longDescription": "Installs a Cursor-only baseline and verifies deterministic safety, link integrity, and supply-chain gating.",
+    "developerName": "mb-team",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/AnastasiyaW/claude-code-config",
+    "privacyPolicyURL": "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
+    "termsOfServiceURL": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+    "defaultPrompt": [
+      "Apply Cursor-only baseline to this repository.",
+      "Run plugin doctor and show failing checks.",
+      "Create missing baseline files and verify deterministic gates."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

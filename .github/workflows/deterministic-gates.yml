@@ -1,0 +1,36 @@
+name: deterministic-gates
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  quality-and-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate config drift
+        run: python scripts/validate_config.py
+
+      - name: Validate deterministic bundle
+        run: python scripts/check_deterministic_gates.py --evidence-mode auto
+
+      - name: Validate supply chain gates
+        run: python scripts/check_supply_chain_gates.py
+
+      - name: Validate safety guards
+        run: python scripts/check_safety_guards.py
+
+      - name: Validate markdown links
+        run: python scripts/check_markdown_links.py
+
+      - name: Validate cursor-only active surface
+        run: python scripts/check_cursor_only_surface.py
