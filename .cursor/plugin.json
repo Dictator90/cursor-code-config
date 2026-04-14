@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Cursor-only hardening plugin with deterministic safety and supply-chain checks.",
   "author": {
-    "name": "mb-team",
-    "email": "mb-team@users.noreply.github.com",
-    "url": "https://github.com/AnastasiyaW/claude-code-config"
+    "name": "Maxim Bezvodinskikh",
+    "email": "m.bezvodinskikh@gmail.com",
+    "url": "https://mb4it.ru"
   },
-  "homepage": "https://github.com/AnastasiyaW/claude-code-config",
-  "repository": "https://github.com/AnastasiyaW/claude-code-config",
+  "homepage": "https://github.com/Dictator90/cursor-code-config",
+  "repository": "https://github.com/Dictator90/cursor-code-config",
   "license": "MIT",
   "keywords": [
     "cursor",
@@ -18,7 +18,7 @@
     "agent-config"
   ],
   "skills": "./skills/",
-  "commands": "./.cursor/commands/",
+  "commands": "./commands/",
   "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json",
   "apps": "./.app.json",
@@ -26,13 +26,13 @@
     "displayName": "Cursor Config Hardening",
     "shortDescription": "Apply and verify Cursor-only hardening baseline.",
     "longDescription": "Installs a Cursor-only baseline and verifies deterministic safety, link integrity, and supply-chain gating.",
-    "developerName": "mb-team",
+    "developerName": "mb4it",
     "category": "Productivity",
     "capabilities": [
       "Interactive",
       "Write"
     ],
-    "websiteURL": "https://github.com/AnastasiyaW/claude-code-config",
+    "websiteURL": "https://github.com/Dictator90/cursor-code-config",
     "privacyPolicyURL": "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
     "termsOfServiceURL": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
     "defaultPrompt": [
