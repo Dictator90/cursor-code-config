@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,12 @@ def repo_root() -> Path:
 
 
 def default_settings_path() -> Path:
+    # Cursor stores user settings in OS-specific locations.
+    if os.name == "nt":
+        app_data = os.environ.get("APPDATA")
+        if app_data:
+            return Path(app_data) / "Cursor" / "User" / "settings.json"
+
     return Path.home() / ".cursor" / "settings.json"
 
 
@@ -151,7 +158,7 @@ def main() -> int:
     parser.add_argument(
         "--settings",
         default=str(default_settings_path()),
-        help="Path to Cursor settings.json (default: ~/.cursor/settings.json)",
+        help=f"Path to Cursor settings.json (default: {default_settings_path()})",
     )
     parser.add_argument(
         "--python-bin",
