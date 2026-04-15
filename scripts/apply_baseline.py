@@ -50,7 +50,13 @@ def copy_if_missing(src: Path, dst: Path) -> bool:
     dst.parent.mkdir(parents=True, exist_ok=True)
     if dst.exists() or not src.exists():
         return False
-    dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    raw = src.read_text(encoding="utf-8")
+    # Guard against accidental malformed source file in plugin repo.
+    try:
+        json.loads(raw)
+    except json.JSONDecodeError:
+        return False
+    dst.write_text(raw, encoding="utf-8")
     return True
 
 

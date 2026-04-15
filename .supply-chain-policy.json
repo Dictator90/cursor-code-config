@@ -22,27 +22,3 @@
     }
   }
 }
-{
-  "version": 1,
-  "supplyChain": {
-    "defaults": {
-      "enabled": true,
-      "minReleaseAgeDays": 7
-    },
-    "npm": {
-      "enabled": true,
-      "minReleaseAgeDays": 7,
-      "ignore": []
-    },
-    "composer": {
-      "enabled": true,
-      "minReleaseAgeDays": 7,
-      "ignore": []
-    },
-    "pypi": {
-      "enabled": true,
-      "minReleaseAgeDays": 7,
-      "ignore": []
-    }
-  }
-}
