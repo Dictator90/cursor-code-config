@@ -65,5 +65,5 @@ This file is designed for KV-cache efficiency and the 150-line AGENTS.md standar
 ## Related standards
 
 - [AGENTS.md specification](https://agents.md) - Linux Foundation / Agentic AI Foundation
-- [How to write a great AGENTS.md](https://code-hosting.local/ai-and-ml/copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/) - best practices from 2500+ repos
+- [How to write a great AGENTS.md](https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/) - best practices from 2500+ repos
 - See `.cursor/rules/cursor-only-baseline.md` for Cursor-specific extensions to this file

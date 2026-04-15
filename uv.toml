@@ -1,1 +1,2 @@
 exclude-newer = "30 days"
+exclude-newer = "7 days"
