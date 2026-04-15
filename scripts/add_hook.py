@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add Cursor hook entries to settings.json one-by-one.
+"""Add Cursor hook entries to hooks.json one-by-one.
 
 Usage examples:
   python scripts/add_hook.py session-drift-validator
@@ -8,14 +8,15 @@ Usage examples:
   python scripts/add_hook.py session-handoff-reminder
   python scripts/add_hook.py session-handoff-check
 
-By default this script updates .cursor/settings.json in current project.
+By default this script updates .cursor/hooks.json in current project
+and copies required scripts to .cursor/hooks/.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -24,116 +25,103 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def default_settings_path() -> Path:
+def default_hooks_config_path() -> Path:
     # Project-local hooks should live with the repo and be versioned.
-    return Path.cwd() / ".cursor" / "settings.json"
+    return Path.cwd() / ".cursor" / "hooks.json"
 
 
-def hook_specs(python_bin: str) -> dict[str, dict[str, Any]]:
-    hooks_dir = repo_root() / "hooks"
+def hook_specs() -> dict[str, dict[str, Any]]:
     return {
         "session-drift-validator": {
-            "event": "SessionStart",
+            "event": "sessionStart",
             "matcher": None,
-            "entry": {
-                "type": "command",
-                "command": f'{python_bin} "{(hooks_dir / "session-drift-validator.py").as_posix()}"',
-                "statusMessage": "Validating docs/rules drift...",
-            },
+            "script": "session-drift-validator.py",
         },
         "session-handoff-reminder": {
-            "event": "Stop",
+            "event": "stop",
             "matcher": None,
-            "entry": {
-                "type": "command",
-                "command": f'{python_bin} "{(hooks_dir / "session-handoff-reminder.py").as_posix()}"',
-                "statusMessage": "Checking handoff state...",
-            },
+            "script": "session-handoff-reminder.py",
         },
         "session-handoff-check": {
-            "event": "SessionStart",
+            "event": "sessionStart",
             "matcher": None,
-            "entry": {
-                "type": "command",
-                "command": f'{python_bin} "{(hooks_dir / "session-handoff-check.py").as_posix()}"',
-                "statusMessage": "Checking for handoffs...",
-            },
+            "script": "session-handoff-check.py",
         },
         "destructive-command-guard": {
-            "event": "PreToolUse",
-            "matcher": "Bash",
-            "entry": {
-                "type": "command",
-                "command": f'{python_bin} "{(hooks_dir / "destructive-command-guard.py").as_posix()}"',
-                "statusMessage": "Checking destructive command safety...",
-            },
+            "event": "preToolUse",
+            "matcher": "Shell",
+            "script": "destructive-command-guard.py",
         },
         "secret-leak-guard": {
-            "event": "PreToolUse",
-            "matcher": "Write|Edit",
-            "entry": {
-                "type": "command",
-                "command": f'{python_bin} "{(hooks_dir / "secret-leak-guard.py").as_posix()}"',
-                "statusMessage": "Checking secret leakage...",
-            },
+            "event": "preToolUse",
+            "matcher": "Write|Edit|TabWrite",
+            "script": "secret-leak-guard.py",
         },
     }
 
 
-def load_settings(path: Path) -> dict[str, Any]:
+def load_hooks_config(path: Path) -> dict[str, Any]:
     if not path.exists():
-        return {}
+        return {"version": 1, "hooks": {}}
     text = path.read_text(encoding="utf-8").strip()
     if not text:
-        return {}
-    return json.loads(text)
+        return {"version": 1, "hooks": {}}
+    data = json.loads(text)
+    if not isinstance(data, dict):
+        raise ValueError(f"Invalid hooks config at {path}: expected object")
+    data.setdefault("version", 1)
+    data.setdefault("hooks", {})
+    if not isinstance(data["hooks"], dict):
+        raise ValueError(f"Invalid hooks config at {path}: expected hooks object")
+    return data
 
 
-def save_settings(path: Path, settings: dict[str, Any]) -> None:
+def save_hooks_config(path: Path, config: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
 
-def ensure_block(event_list: list[dict[str, Any]], matcher: str | None) -> dict[str, Any]:
-    for block in event_list:
-        if matcher is None and "matcher" not in block:
-            return block
-        if matcher is not None and block.get("matcher") == matcher:
-            return block
-
-    new_block: dict[str, Any] = {"hooks": []}
-    if matcher is not None:
-        new_block["matcher"] = matcher
-    event_list.append(new_block)
-    return new_block
+def ensure_project_hook_script(script_name: str, project_root: Path) -> Path:
+    source = repo_root() / "hooks" / script_name
+    if not source.exists():
+        raise FileNotFoundError(f"Hook script not found: {source}")
+    dest = project_root / ".cursor" / "hooks" / script_name
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, dest)
+    return dest
 
 
-def hook_exists(block: dict[str, Any], hook_entry: dict[str, Any]) -> bool:
-    hooks = block.get("hooks", [])
-    for existing in hooks:
-        if existing.get("type") == hook_entry["type"] and existing.get("command") == hook_entry["command"]:
+def hook_exists(event_list: list[dict[str, Any]], hook_entry: dict[str, Any]) -> bool:
+    for existing in event_list:
+        if (
+            existing.get("command") == hook_entry["command"]
+            and existing.get("matcher") == hook_entry.get("matcher")
+            and existing.get("type", "command") == hook_entry.get("type", "command")
+        ):
             return True
     return False
 
 
-def add_hook(settings: dict[str, Any], spec: dict[str, Any]) -> bool:
-    hooks_obj = settings.setdefault("hooks", {})
+def add_hook(config: dict[str, Any], spec: dict[str, Any], project_root: Path, python_bin: str) -> bool:
+    hooks_obj = config.setdefault("hooks", {})
     event = spec["event"]
     matcher = spec["matcher"]
-    entry = spec["entry"]
+    script_name = spec["script"]
+
+    script_path = ensure_project_hook_script(script_name, project_root)
+    entry: dict[str, Any] = {
+        "command": f'{python_bin} "{script_path.as_posix()}"',
+    }
+    if matcher is not None:
+        entry["matcher"] = matcher
 
     event_list = hooks_obj.setdefault(event, [])
     if not isinstance(event_list, list):
         raise ValueError(f"Invalid hooks.{event}: expected list")
-
-    block = ensure_block(event_list, matcher)
-    if "hooks" not in block or not isinstance(block["hooks"], list):
-        block["hooks"] = []
-
-    if hook_exists(block, entry):
+    if hook_exists(event_list, entry):
         return False
 
-    block["hooks"].append(entry)
+    event_list.append(entry)
     return True
 
 
@@ -151,9 +139,11 @@ def main() -> int:
         help="Hook to add",
     )
     parser.add_argument(
+        "--hooks-config",
         "--settings",
-        default=str(default_settings_path()),
-        help=f"Path to Cursor settings.json (default: {default_settings_path()})",
+        dest="hooks_config",
+        default=str(default_hooks_config_path()),
+        help=f"Path to Cursor hooks.json (default: {default_hooks_config_path()})",
     )
     parser.add_argument(
         "--python-bin",
@@ -162,17 +152,18 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    settings_path = Path(args.settings).expanduser()
-    settings = load_settings(settings_path)
-    specs = hook_specs(args.python_bin)
-    changed = add_hook(settings, specs[args.hook_name])
+    hooks_config_path = Path(args.hooks_config).expanduser()
+    hooks_config = load_hooks_config(hooks_config_path)
+    specs = hook_specs()
+    project_root = hooks_config_path.parent.parent
+    changed = add_hook(hooks_config, specs[args.hook_name], project_root, args.python_bin)
 
-    save_settings(settings_path, settings)
+    save_hooks_config(hooks_config_path, hooks_config)
 
     if changed:
-        print(f"[add-hook] Added '{args.hook_name}' to {settings_path}")
+        print(f"[add-hook] Added '{args.hook_name}' to {hooks_config_path}")
     else:
-        print(f"[add-hook] '{args.hook_name}' already present in {settings_path}")
+        print(f"[add-hook] '{args.hook_name}' already present in {hooks_config_path}")
     return 0
 
 

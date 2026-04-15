@@ -49,7 +49,7 @@ These commands are available via `.cursor/commands/`:
   - `uv.toml` (`exclude-newer = "7 days"`)
   - session continuity files in `.cursor/handoffs/` (when using handoff flow)
 - **Written in the current project** (safe/project-local):
-  - `.cursor/settings.json` when running hook-enable commands (`/add-hook-*` or `python scripts/add_hook.py ...`)
+  - `.cursor/hooks.json` and `.cursor/hooks/*.py` when running hook-enable commands (`/add-hook-*` or `python scripts/add_hook.py ...`)
 
 `scripts/apply_baseline.py` and `scripts/doctor.py` are explicitly project-root based (`Path.cwd()`), so baseline files are created/checked in the active project.
 
