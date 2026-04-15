@@ -88,7 +88,7 @@ Practical guide for creating reliable, discoverable Cursor skills. Covers descri
 
 ### [09 - Supply Chain Defense](09-supply-chain-defense.md)
 
-Protect against malicious package updates by gating fresh packages. Set `min-release-age=7` (npm) and `exclude-newer = "7 days"` (uv) globally. Most poisoned packages are detected within 1-3 days; 7-day delay eliminates the attack window with near-zero friction.
+Protect against malicious package updates by gating fresh packages using repo-local policy controls (for example `.cursor/.supply-chain-policy.json`). Most poisoned packages are detected within 1-3 days; a 7-day delay eliminates the attack window with near-zero friction.
 
 **When to use:** Always. Every development machine, every CI runner. Override only for critical security patches that need immediate deployment.
 

@@ -12,9 +12,13 @@ The defense is equally simple: **never install packages published less than 7 da
 
 ### npm / Node.js
 
-```ini
-# ~/.npmrc
-min-release-age=7
+```json
+// .cursor/.supply-chain-policy.json
+{
+  "supplyChain": {
+    "npm": { "enabled": true, "minReleaseAgeDays": 7, "ignore": [] }
+  }
+}
 ```
 
 This tells npm to refuse any package version published less than 7 days ago. If a legitimate package has a brand-new release, you wait a week. If it was a supply chain attack, it's been caught and yanked by then.
@@ -120,7 +124,7 @@ Sources: Elastic Security Labs, Snyk, Wiz, Google Cloud Blog (GTIG attribution),
 ## Gotchas
 
 - **CI caches may bypass age gating** - If your CI caches `node_modules`, the config only applies on cache miss. Ensure clean installs periodically.
-- **Monorepo lockfile drift** - In monorepos, one dev's `npm install` without the config can pull fresh packages. Enforce the config at repo level (`.npmrc` in repo root).
+- **Monorepo lockfile drift** - In monorepos, one dev's `npm install` without shared policy can pull fresh packages. Enforce a repo-local policy file (`.cursor/.supply-chain-policy.json`).
 - **Transitive dependencies** - The config applies to transitive deps too (good), but you might not notice when a deep dependency is being held back (check `npm outdated`).
 - **Private registries** - If you use a private npm/PyPI registry that mirrors public, ensure the mirror also respects age gating, or the freshness check happens client-side.
 - **Self-destructing malware** - Modern supply chain payloads clean up after execution. Post-infection inspection of `node_modules` may reveal nothing. Check for RAT artifacts on disk and network IOCs.

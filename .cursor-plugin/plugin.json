@@ -20,7 +20,6 @@
   "skills": "./skills/",
   "commands": "./commands/",
   "hooks": "./hooks/hooks.json",
-  "mcpServers": "./.mcp.json",
   "apps": "./.app.json",
   "interface": {
     "displayName": "Cursor Config Hardening",

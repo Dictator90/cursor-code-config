@@ -22,14 +22,12 @@ ACTIVE_SURFACES = [
     "alternatives/README.md",
     "templates/README.md",
     "hooks/README.md",
-    "rules/session-handoff.md",
-    ".cursor/rules/session-handoff.md",
+    "rules/session-handoff.mdc",
+    "rules/memory-crosslinks.mdc",
     "scripts/validate_config.py",
     "hooks/session-drift-validator.py",
     ".cursor-plugin/plugin.json",
     ".cursor-plugin/marketplace.json",
-    ".cursor/rules/cursor-only-baseline.md",
-    ".cursor/rules/session-handoff.md",
 ]
 
 

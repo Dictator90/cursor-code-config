@@ -369,9 +369,13 @@ skills/ai-ml/flux2-lora-training/
 
 **The mechanism:** One configuration line:
 
-```ini
-# ~/.npmrc
-min-release-age=7
+```json
+// .cursor/.supply-chain-policy.json
+{
+  "supplyChain": {
+    "npm": { "enabled": true, "minReleaseAgeDays": 7, "ignore": [] }
+  }
+}
 ```
 
 Packages published less than 7 days ago are not installed. Period.
@@ -382,12 +386,41 @@ Packages published less than 7 days ago are not installed. Period.
 
 `min-release-age=7` would have blocked both versions completely. The attack was detected within hours, but anyone who installed during that 3-hour window was compromised.
 
-**For Python (uv):**
+**Unified local policy (enable/disable, days, ignore):**
 
-```toml
-# ~/.config/uv/uv.toml
-exclude-newer = "7 days"
+All supply-chain age-gate controls are centralized in one project-local file:
+
+```json
+# .cursor/.supply-chain-policy.json
+{
+  "version": 1,
+  "supplyChain": {
+    "defaults": { "enabled": true, "minReleaseAgeDays": 7 },
+    "npm": {
+      "enabled": true,
+      "minReleaseAgeDays": 7,
+      "ignore": ["@my-org/internal-cli"]
+    },
+    "composer": {
+      "enabled": true,
+      "minReleaseAgeDays": 7,
+      "ignore": ["my-vendor/private-package"]
+    },
+    "pypi": {
+      "enabled": true,
+      "minReleaseAgeDays": 7,
+      "ignore": ["internal-toolkit"]
+    }
+  }
+}
 ```
+
+- `enabled` toggles checks per ecosystem.
+- `minReleaseAgeDays` configures the minimum publication age.
+- `ignore` lists package exceptions per ecosystem.
+- `composer` checks resolve release timestamps from Packagist.
+- `npm` checks are fully policy-driven via `.cursor/.supply-chain-policy.json`.
+- `pypi` policy is stored in this file (single source of truth for plugin checks).
 
 **Cost:** Occasionally you wait a week for a brand-new package. **Benefit:** You are immune to the most common class of supply chain attacks.
 

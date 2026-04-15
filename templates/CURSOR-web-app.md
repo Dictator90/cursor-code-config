@@ -76,7 +76,11 @@ export function UserProfile() { ... }
 
 ## Supply Chain Defense
 
-```ini
-# ~/.npmrc (or project .npmrc)
-min-release-age=7
+```json
+// .cursor/.supply-chain-policy.json
+{
+  "supplyChain": {
+    "npm": { "enabled": true, "minReleaseAgeDays": 7, "ignore": [] }
+  }
+}
 ```

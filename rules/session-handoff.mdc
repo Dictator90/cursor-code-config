@@ -1,6 +1,9 @@
-# Session Handoff - Seamless Transitions Between Sessions
+---
+description: Session handoff protocol for manual and end-of-session continuity.
+alwaysApply: true
+---
 
-Drop this file into `.cursor/rules/session-handoff.md` (project-local) to enable manual handoff triggers.
+# Session Handoff - Seamless Transitions Between Sessions
 
 ## Manual trigger
 
@@ -95,7 +98,7 @@ Index format:
 
 A `Stop` hook can force handoff writing mechanically, but requires the user
 to configure Cursor settings with a Python script. This rule works
-immediately in any session because Cursor reads `.cursor/rules/*.md` as part
+immediately in any session because Cursor reads `.cursor/rules/*.mdc` as part
 of the system prompt.
 
 **Use both:** the rule handles deliberate triggers and older sessions started

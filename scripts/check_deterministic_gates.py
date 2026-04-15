@@ -76,6 +76,7 @@ def run_checks(
     checks.append(_run([sys.executable, "scripts/check_supply_chain_gates.py"]))
     checks.append(_run([sys.executable, "scripts/check_markdown_links.py"]))
     checks.append(_run([sys.executable, "scripts/check_cursor_only_surface.py"]))
+    checks.append(_run([sys.executable, "scripts/check_plugin_submission.py"]))
 
     evidence_status = "skipped"
     evidence_dir = None

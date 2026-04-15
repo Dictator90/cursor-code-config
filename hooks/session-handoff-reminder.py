@@ -93,7 +93,7 @@ def main() -> int:
         "reason": (
             f"This session has been active for ~{int(age)} minutes and no fresh "
             f"handoff exists. Before ending, please write a handoff file in "
-            f".cursor/handoffs/ following the format in .cursor/rules/session-handoff.md. "
+            f".cursor/handoffs/ following your project handoff rule format. "
             f"File name: YYYY-MM-DD_HH-MM_<session-short-id>.md. "
             f"Keep it under 1500 tokens. Must include: goal, what was done, "
             f"what did NOT work (with reasons), current state, key decisions, "

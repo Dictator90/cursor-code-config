@@ -13,9 +13,8 @@ TARGETS = [
     Path("AGENTS.md"),
     Path("templates/README.md"),
     Path("hooks/README.md"),
-    Path("rules/session-handoff.md"),
-    Path(".cursor/rules/cursor-only-baseline.md"),
-    Path(".cursor/rules/session-handoff.md"),
+    Path("rules/session-handoff.mdc"),
+    Path("rules/memory-crosslinks.mdc"),
 ]
 
 

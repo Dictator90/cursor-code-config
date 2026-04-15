@@ -1,3 +1,8 @@
+---
+description: Maintain wiki-link cross-references across memory files.
+alwaysApply: true
+---
+
 # Memory Cross-Links - wiki-links graph pattern
 
 Memory files can reference each other using wiki-links `[[filename]]` (without .md extension). This creates a navigable knowledge graph without any database.

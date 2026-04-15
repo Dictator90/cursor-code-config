@@ -84,7 +84,7 @@ benchmarks/    # Performance benchmarks
 
 ```ini
 # For npm packages
-min-release-age=7
+minReleaseAgeDays=7 (configured in .cursor/.supply-chain-policy.json)
 ```
 
 ```toml

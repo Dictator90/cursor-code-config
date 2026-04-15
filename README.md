@@ -13,45 +13,37 @@ This repository is a **single plugin** (`cursor-config-hardening`) with principl
 - `templates/` - starter templates for policy, review, handoff, chronicle, and memory.
 - `rules/` + `.cursor/rules/` - runtime guidance and continuity protocol.
 - `scripts/` - deterministic setup and verification (`apply_baseline.py`, `doctor.py`, validators).
-- `.cursor/commands/` - slash commands for enabling hooks from the agent.
+- `commands/` - production onboarding command and validation utilities.
 - `skills/` - domain skill catalog + `CURSOR-HARDENING` operational skill.
 
 ## Quick Start (for project users)
 
 1. Open your target project in Cursor.
 2. Connect/install this plugin (`cursor-config-hardening`).
-3. From project root, apply baseline:
-   - `python scripts/apply_baseline.py`
-4. Enable hooks (recommended one-shot):
-   - `/add-hooks-baseline`
-   - or one-by-one: `/add-hook-session-drift-validator`, `/add-hook-destructive-command-guard`, etc.
-5. Verify:
-   - `python scripts/doctor.py`
-   - `python scripts/check_cursor_only_surface.py`
-   - `python scripts/validate_config.py --strict`
-   - or use slash commands: `/doctor`, `/check-cursor-only-surface`, `/validate-config-strict`
+3. Run single onboarding command:
+   - `/install-code-config`
+4. Validate after install (optional but recommended):
+   - `/check-cursor-only-surface`
+   - `/validate-config-strict`
 
 ## Cursor Commands (Agent Slash Commands)
 
-These commands are available via `.cursor/commands/`:
+These commands are provided by `commands/` in this plugin:
 
-- `/apply-baseline` -> `python scripts/apply_baseline.py`
-- `/doctor` -> `python scripts/doctor.py`
+- `/install-code-config` -> baseline + hooks + doctor in one run
 - `/check-cursor-only-surface` -> `python scripts/check_cursor_only_surface.py`
 - `/validate-config-strict` -> `python scripts/validate_config.py --strict`
 
 ## Where Files Are Written
 
 - **Written in the current project** (safe/project-local):
-  - `.cursor/rules/cursor-only-baseline.md`
-  - `.cursor/rules/session-handoff.md`
-  - `.npmrc` (`min-release-age=7`)
-  - `uv.toml` (`exclude-newer = "7 days"`)
+  - `.cursor/.supply-chain-policy.json` (enable/disable checks, min age days, ignore lists per ecosystem)
   - session continuity files in `.cursor/handoffs/` (when using handoff flow)
 - **Written in the current project** (safe/project-local):
-  - `.cursor/hooks.json` and `.cursor/hooks/*.py` when running hook-enable commands (`/add-hook-*` or `python scripts/add_hook.py ...`)
+  - `.cursor/hooks.json` and `.cursor/hooks/*.py` when running `/install-code-config`
+  - runtime hooks are project-local; plugin-level `hooks/hooks.json` is the baseline schema source
 
-`scripts/apply_baseline.py` and `scripts/doctor.py` are explicitly project-root based (`Path.cwd()`), so baseline files are created/checked in the active project.
+`scripts/apply_baseline.py`, `scripts/add_hook.py`, and `scripts/doctor.py` are project-root based (`Path.cwd()`), so all runtime files are created/checked in the active project.
 
 ## About Extra Skill vs Original
 
@@ -61,9 +53,14 @@ It is intentionally added to improve setup UX and deterministic rollout; it does
 ## Safety/Compatibility Notes
 
 - Plugin manifest: `.cursor-plugin/plugin.json`
-- Plugin commands: `.cursor/commands/`
+- Plugin commands: `commands/`
 - Plugin remains root-scoped (`.`) via `.cursor-plugin/marketplace.json` and `.agents/plugins/marketplace.json`.
-- Hooks are not auto-injected silently; they are added explicitly via `/add-hook-*` commands for controlled rollout.
+- Hooks are not auto-injected silently; they are added explicitly during `/install-code-config`.
+
+## Migration Note
+
+- Production onboarding is consolidated into `/install-code-config`.
+- Legacy granular install commands were removed from the published command surface.
 
 ## License
 

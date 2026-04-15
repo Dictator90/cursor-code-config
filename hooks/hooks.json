@@ -1,3 +1,49 @@
 {
-  "hooks": []
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .cursor/hooks/session-drift-validator.py"
+          },
+          {
+            "type": "command",
+            "command": "python .cursor/hooks/session-handoff-check.py"
+          }
+        ]
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "Shell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .cursor/hooks/destructive-command-guard.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|TabWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .cursor/hooks/secret-leak-guard.py"
+          }
+        ]
+      }
+    ],
+    "stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .cursor/hooks/session-handoff-reminder.py"
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -11,7 +11,7 @@ This is a configuration system repository for AI coding agents, not an applicati
 - `skills/` - domain-specific knowledge bundles (loaded on demand)
 - `rules/` - drop-in `.cursor/rules/` files
 - `scripts/` - diagnostic utilities (config drift validator, KV-cache stats)
-- `.cursor/rules/cursor-only-baseline.md` - Cursor-specific policy overlay
+- `rules/*.mdc` - Cursor-specific policy overlays for plugin-provided runtime guidance
 
 ## How agents should use this repo
 
@@ -60,10 +60,9 @@ This file is designed for KV-cache efficiency and the 150-line AGENTS.md standar
 - No timestamps or dynamic content
 - Stable section order - do not shuffle
 - Append-only edits preferred over restructuring
-- For Cursor-specific runtime policies, use `.cursor/rules/cursor-only-baseline.md`
+- For Cursor-specific runtime policies, use `rules/*.mdc`
 
 ## Related standards
 
 - [AGENTS.md specification](https://agents.md) - Linux Foundation / Agentic AI Foundation
 - [How to write a great AGENTS.md](https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/) - best practices from 2500+ repos
-- See `.cursor/rules/cursor-only-baseline.md` for Cursor-specific extensions to this file

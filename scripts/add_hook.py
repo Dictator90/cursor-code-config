@@ -10,6 +10,8 @@ Usage examples:
 
 By default this script updates .cursor/hooks.json in current project
 and copies required scripts to .cursor/hooks/.
+Plugin-level hooks/hooks.json is baseline metadata; runtime source of truth
+is always project-local .cursor/hooks.json.
 """
 
 from __future__ import annotations
@@ -108,9 +110,11 @@ def add_hook(config: dict[str, Any], spec: dict[str, Any], project_root: Path, p
     matcher = spec["matcher"]
     script_name = spec["script"]
 
-    script_path = ensure_project_hook_script(script_name, project_root)
+    ensure_project_hook_script(script_name, project_root)
     entry: dict[str, Any] = {
-        "command": f'{python_bin} "{script_path.as_posix()}"',
+        # Project hooks run from project root, so keep command paths relative
+        # for portability across machines and CI workspaces.
+        "command": f'{python_bin} ".cursor/hooks/{script_name}"',
     }
     if matcher is not None:
         entry["matcher"] = matcher

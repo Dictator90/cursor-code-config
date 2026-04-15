@@ -22,7 +22,4 @@ python scripts/apply_baseline.py
 
 ## Required files validated by doctor
 
-- `.cursor/rules/cursor-only-baseline.md`
-- `.cursor/rules/session-handoff.md`
-- `.npmrc` containing `min-release-age=7`
-- `uv.toml` containing `exclude-newer = "7 days"`
+- `.cursor/.supply-chain-policy.json` with valid `supplyChain` object
