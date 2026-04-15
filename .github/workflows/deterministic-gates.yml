@@ -19,6 +19,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Apply baseline in CI workspace
+        run: python scripts/apply_baseline.py
+
       - name: Validate config drift
         run: python scripts/validate_config.py
 
