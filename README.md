@@ -32,6 +32,7 @@ This repository is a **single plugin** (`cursor-config-hardening`) with principl
 These commands are provided by `commands/` in this plugin:
 
 - `/install-code-config` -> baseline + hooks + doctor + deterministic gates
+- `/handoff-save` -> save session handoff now (deduplicated, append-only)
 - `/check-cursor-only-surface` -> `python scripts/check_cursor_only_surface.py`
 - `/validate-config-strict` -> `python scripts/validate_config.py --strict`
 - Install commands are executed by the user; agent role is guidance + verification.
