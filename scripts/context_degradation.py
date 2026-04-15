@@ -22,21 +22,34 @@ import argparse
 import json
 import sys
 import time
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from statistics import mean, median, stdev
 
 
-# Context window sizes by model family
+# Context window sizes by model family / aliases.
+# Keep this list conservative: default to 200K unless model explicitly
+# signals 1M capacity.
 CONTEXT_WINDOWS = {
     "cursor-sonnet-4": 200_000,
     "cursor-opus-4": 200_000,
     "cursor-3-5-sonnet": 200_000,
     "cursor-3-opus": 200_000,
     "cursor-3-5-haiku": 200_000,
+    "cursor-gpt-4.1": 200_000,
+    "cursor-gpt-4o": 200_000,
+    "cursor-gpt-5": 200_000,
+    "composer-1.5": 200_000,
+    "composer-2": 200_000,
+    "cursor-o3": 200_000,
+    "cursor-o4-mini": 200_000,
+    "cursor-gemini-2.5-pro": 200_000,
+    "cursor-gemini-2.5-flash": 200_000,
     # Extended thinking / 1M models
     "cursor-sonnet-4-1m": 1_000_000,
     "cursor-opus-4-1m": 1_000_000,
+    "cursor-gpt-5-1m": 1_000_000,
+    "cursor-gemini-2.5-pro-1m": 1_000_000,
 }
 
 BUCKETS = [
@@ -48,17 +61,29 @@ BUCKETS = [
 ]
 
 
-def guess_context_window(model: str) -> int:
-    """Guess context window from model name."""
+KNOWN_200K_HINTS = (
+    "sonnet", "opus", "haiku", "gpt", "gemini", "o1", "o3", "o4", "claude", "cursor-",
+)
+
+
+def guess_context_window(model: str) -> tuple[int, str]:
+    """Guess context window from model name.
+
+    Returns:
+        (window_size, source)
+        source is one of: explicit_1m, mapped_prefix, family_hint_200k, default_200k
+    """
     if not model:
-        return 200_000
+        return 200_000, "default_200k"
     model_lower = model.lower()
     if "1m" in model_lower or "1000k" in model_lower:
-        return 1_000_000
+        return 1_000_000, "explicit_1m"
     for prefix, size in CONTEXT_WINDOWS.items():
         if prefix in model_lower:
-            return size
-    return 200_000
+            return size, "mapped_prefix"
+    if any(hint in model_lower for hint in KNOWN_200K_HINTS):
+        return 200_000, "family_hint_200k"
+    return 200_000, "default_200k"
 
 
 def parse_session_turns(path: Path, context_window_override: int | None = None) -> list[dict]:
@@ -87,7 +112,11 @@ def parse_session_turns(path: Path, context_window_override: int | None = None) 
                     total_in = inp + cc + cr
 
                     model = msg.get("model", "")
-                    ctx_win = context_window_override or guess_context_window(model)
+                    if context_window_override:
+                        ctx_win = context_window_override
+                        ctx_source = "override"
+                    else:
+                        ctx_win, ctx_source = guess_context_window(model)
 
                     # Detect compaction: context dropped significantly
                     compacted = total_in < prev_total * 0.7 and prev_total > 10_000
@@ -104,6 +133,7 @@ def parse_session_turns(path: Path, context_window_override: int | None = None) 
                         "compacted": compacted,
                         "model": model,
                         "ctx_window": ctx_win,
+                        "ctx_source": ctx_source,
                     })
 
                     prev_total = total_in
@@ -132,6 +162,7 @@ def analyze_sessions(session_files: list[Path], ctx_override: int | None) -> dic
     })
 
     session_summaries = []
+    unknown_models = Counter()
     total_turns = 0
     total_compactions = 0
 
@@ -155,6 +186,8 @@ def analyze_sessions(session_files: list[Path], ctx_override: int | None) -> dic
             if t["compacted"]:
                 bd["compaction_count"] += 1
                 session_compactions += 1
+            if t["model"] and t["ctx_source"] == "default_200k":
+                unknown_models[t["model"]] += 1
             session_max_fill = max(session_max_fill, t["fill"])
 
         total_turns += len(turns)
@@ -171,6 +204,7 @@ def analyze_sessions(session_files: list[Path], ctx_override: int | None) -> dic
     return {
         "buckets": dict(bucket_data),
         "sessions": session_summaries,
+        "unknown_models": unknown_models,
         "total_turns": total_turns,
         "total_compactions": total_compactions,
     }
@@ -179,6 +213,7 @@ def analyze_sessions(session_files: list[Path], ctx_override: int | None) -> dic
 def print_report(data: dict) -> None:
     buckets = data["buckets"]
     sessions = data["sessions"]
+    unknown_models = data["unknown_models"]
 
     print()
     print("=" * 78)
@@ -227,6 +262,15 @@ def print_report(data: dict) -> None:
     print("    - End Turn% increasing (model stops working, starts talking)")
     print("    - Tool Use% decreasing (less active problem-solving)")
     print()
+
+    if unknown_models:
+        print("-" * 78)
+        print("UNMAPPED MODEL IDS (defaulted to 200K)")
+        print("-" * 78)
+        print("Add these to CONTEXT_WINDOWS for stricter accounting:")
+        for model, count in unknown_models.most_common(15):
+            print(f"  - {model} ({count} turns)")
+        print()
 
     # Sessions that hit high fill
     high_fill = [s for s in sessions if s["max_fill"] > 0.4]
