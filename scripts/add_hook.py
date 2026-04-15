@@ -8,7 +8,7 @@ Usage examples:
   python scripts/add_hook.py session-handoff-reminder
   python scripts/add_hook.py session-handoff-check
 
-By default this script updates ~/.cursor/settings.json.
+By default this script updates .cursor/settings.json in current project.
 """
 
 from __future__ import annotations
@@ -25,13 +25,8 @@ def repo_root() -> Path:
 
 
 def default_settings_path() -> Path:
-    # Cursor stores user settings in OS-specific locations.
-    if os.name == "nt":
-        app_data = os.environ.get("APPDATA")
-        if app_data:
-            return Path(app_data) / "Cursor" / "User" / "settings.json"
-
-    return Path.home() / ".cursor" / "settings.json"
+    # Project-local hooks should live with the repo and be versioned.
+    return Path.cwd() / ".cursor" / "settings.json"
 
 
 def hook_specs(python_bin: str) -> dict[str, dict[str, Any]]:

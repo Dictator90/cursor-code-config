@@ -48,8 +48,8 @@ These commands are available via `.cursor/commands/`:
   - `.npmrc` (`min-release-age=7`)
   - `uv.toml` (`exclude-newer = "7 days"`)
   - session continuity files in `.cursor/handoffs/` (when using handoff flow)
-- **Written in Cursor user profile** (global IDE config):
-  - Cursor user `settings.json` when running hook-enable commands (`/add-hook-*` or `python scripts/add_hook.py ...`)
+- **Written in the current project** (safe/project-local):
+  - `.cursor/settings.json` when running hook-enable commands (`/add-hook-*` or `python scripts/add_hook.py ...`)
 
 `scripts/apply_baseline.py` and `scripts/doctor.py` are explicitly project-root based (`Path.cwd()`), so baseline files are created/checked in the active project.
 
