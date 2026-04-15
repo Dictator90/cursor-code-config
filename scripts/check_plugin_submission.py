@@ -9,11 +9,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from runtime_contract import RUNTIME_RULE_FILES
+
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = ROOT / ".cursor-plugin" / "plugin.json"
+LEGACY_MANIFEST_PATH = ROOT / ".cursor" / "plugin.json"
 README_PATH = ROOT / "README.md"
 COMMANDS_DIR = ROOT / "commands"
+RULES_DIR = ROOT / "rules"
+APPLY_BASELINE_PATH = ROOT / "scripts" / "apply_baseline.py"
+CORE_RUNTIME_RULE_PATH = ROOT / "rules" / "core-runtime.mdc"
 
 
 def _check(condition: bool, name: str, details: str) -> dict[str, Any]:
@@ -36,6 +42,24 @@ def main() -> int:
         checks.append(_check(False, "manifest_load", manifest_error or "manifest load error"))
     else:
         checks.append(_check(True, "manifest_load", str(MANIFEST_PATH)))
+        if LEGACY_MANIFEST_PATH.exists():
+            legacy_manifest, legacy_error = _load_json(LEGACY_MANIFEST_PATH)
+            if legacy_manifest is None:
+                checks.append(
+                    _check(
+                        False,
+                        "legacy_manifest_load",
+                        legacy_error or f"invalid json in {LEGACY_MANIFEST_PATH}",
+                    )
+                )
+            else:
+                checks.append(
+                    _check(
+                        legacy_manifest == manifest,
+                        "legacy_manifest_synced_with_canonical",
+                        f"{LEGACY_MANIFEST_PATH} must match {MANIFEST_PATH}",
+                    )
+                )
         for field, kind in (("commands", "dir"), ("skills", "dir"), ("hooks", "file"), ("apps", "file")):
             value = str(manifest.get(field, "")).strip()
             posix_style = value.startswith("./") and ("\\" not in value)
@@ -54,6 +78,22 @@ def main() -> int:
                     checks.append(_check(target.is_dir(), f"manifest_path_kind_{field}", f"{target}"))
                 else:
                     checks.append(_check(target.is_file(), f"manifest_path_kind_{field}", f"{target}"))
+        default_prompt = manifest.get("interface", {}).get("defaultPrompt", [])
+        prompt_text = "\n".join(default_prompt) if isinstance(default_prompt, list) else ""
+        checks.append(
+            _check(
+                "Guide the user to run /install-code-config" in prompt_text,
+                "manifest_default_prompt_user_only_install",
+                "defaultPrompt should guide user-run install and verification",
+            )
+        )
+        checks.append(
+            _check(
+                "Apply Cursor-only baseline" not in prompt_text and "Create missing baseline files" not in prompt_text,
+                "manifest_default_prompt_no_auto_install_language",
+                "defaultPrompt must not instruct autonomous baseline apply/create actions",
+            )
+        )
 
         commands_path = ROOT / str(manifest.get("commands", "")).strip()
         command_files = sorted(commands_path.glob("*.md")) if commands_path.is_dir() else []
@@ -66,6 +106,15 @@ def main() -> int:
         )
         install_command = commands_path / "install-code-config.md"
         checks.append(_check(install_command.exists(), "install_command_exists", str(install_command)))
+        if install_command.exists():
+            install_text = install_command.read_text(encoding="utf-8")
+            checks.append(
+                _check(
+                    "check_deterministic_gates.py --evidence-mode auto" in install_text,
+                    "install_command_mentions_deterministic_gates",
+                    "install command should require deterministic gates check",
+                )
+            )
         legacy_commands = [
             "apply-baseline.md",
             "doctor.md",
@@ -132,6 +181,20 @@ def main() -> int:
         checks.append(_check(mentions_commands, "readme_mentions_plugin_commands_path", "README should document commands/"))
         checks.append(_check(mentions_install, "readme_mentions_install_command", "README should document /install-code-config"))
         checks.append(_check(not mentions_removed, "readme_no_removed_granular_commands", "README must not mention removed granular commands"))
+        checks.append(
+            _check(
+                "Install commands are executed by the user" in readme_text,
+                "readme_user_only_install_policy",
+                "README should state that install commands are user-run only",
+            )
+        )
+        checks.append(
+            _check(
+                "CURSOR-HARDENING" not in readme_text,
+                "readme_no_removed_cursor_hardening_skill",
+                "README must not reference removed CURSOR-HARDENING skill",
+            )
+        )
     else:
         checks.append(_check(False, "readme_exists", f"missing file: {README_PATH}"))
 
@@ -147,6 +210,46 @@ def main() -> int:
             len(hardcoded_hits) == 0,
             "commands_no_hardcoded_local_plugin_paths",
             f"violations: {hardcoded_hits}" if hardcoded_hits else "no hardcoded local plugin paths",
+        )
+    )
+    missing_rules = [name for name in RUNTIME_RULE_FILES if not (RULES_DIR / name).exists()]
+    checks.append(
+        _check(
+            len(missing_rules) == 0,
+            "runtime_rule_pack_complete",
+            f"missing: {missing_rules}" if missing_rules else "full runtime rule pack exists",
+        )
+    )
+    if APPLY_BASELINE_PATH.exists():
+        apply_text = APPLY_BASELINE_PATH.read_text(encoding="utf-8")
+        checks.append(
+            _check(
+                "RUNTIME_RULE_FILES" in apply_text and ".code-config-install.json" in apply_text,
+                "apply_baseline_projects_rules_and_stamp",
+                "apply_baseline.py should project rules and write install stamp",
+            )
+        )
+    else:
+        checks.append(_check(False, "apply_baseline_exists", f"missing file: {APPLY_BASELINE_PATH}"))
+
+    if CORE_RUNTIME_RULE_PATH.exists():
+        core_runtime_text = CORE_RUNTIME_RULE_PATH.read_text(encoding="utf-8")
+        checks.append(
+            _check(
+                "user-run only" in core_runtime_text and "do not execute it automatically" in core_runtime_text,
+                "core_runtime_user_only_install_policy",
+                "core-runtime rule should explicitly enforce user-only install execution",
+            )
+        )
+    else:
+        checks.append(_check(False, "core_runtime_rule_exists", f"missing file: {CORE_RUNTIME_RULE_PATH}"))
+
+    skill_file = ROOT / "skills" / "CURSOR-HARDENING" / "SKILL.md"
+    checks.append(
+        _check(
+            not skill_file.exists(),
+            "cursor_hardening_skill_removed",
+            "skills/CURSOR-HARDENING/SKILL.md should be removed from plugin surface",
         )
     )
 

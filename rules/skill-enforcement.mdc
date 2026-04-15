@@ -1,0 +1,18 @@
+---
+description: Enforce mandatory skill usage in critical scenarios.
+alwaysApply: true
+---
+
+# Skill Enforcement
+
+Mandatory cases:
+
+- Do not answer library/API usage from memory when Context7 is available.
+- Do not design plugin architecture changes without `plugin-architect`.
+- Do not create/update rule files without applying `create-rule` format checks.
+
+Fallback policy:
+
+- If required skill/tool is unavailable, state the limitation explicitly.
+- Proceed with conservative defaults and mark assumptions.
+- Recommend rerun with required skill/tool enabled.

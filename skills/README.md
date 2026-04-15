@@ -76,14 +76,6 @@ After copying, the skill becomes available as `/skill-name` in Cursor.
 | [humanize-english](writing/humanize-english/) | `/humanize-english` | Make AI-generated text sound natural: burstiness, perplexity, banned words, tone control. Passes AI detection. |
 | [humanize-russian](writing/humanize-russian/) | `/humanize-russian` | Make Russian AI-generated text sound natural and idiomatic for human readers. |
 
-## Plugin Utilities
-
-| Skill | Command | Description |
-|---|---|---|
-| [CURSOR-HARDENING](CURSOR-HARDENING/) | `/cursor-hardening` | Cursor baseline hardening helper with deterministic validation/apply command flow. |
-
----
-
 ## Recommended External Skills
 
 These are not included in this repo but are excellent complements:

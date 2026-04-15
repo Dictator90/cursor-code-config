@@ -1,0 +1,15 @@
+---
+description: Route tasks to required skills before implementation.
+alwaysApply: true
+---
+
+# Skill Routing
+
+Before implementing, map task type to skills:
+
+- Library/API/framework questions or code examples -> use Context7 MCP first.
+- Plugin architecture/discoverability/manifest decisions -> use `plugin-architect`.
+- Rule authoring requests (`/create-rule`, `.cursor/rules/`) -> use `create-rule`.
+- Supply-chain policy changes -> follow `rules/core-runtime.mdc` and deterministic checks.
+
+If a required skill is available, load/follow it before editing files.

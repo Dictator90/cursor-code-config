@@ -9,9 +9,9 @@ This is a configuration system repository for AI coding agents, not an applicati
 - `hooks/` - ready-to-use Python hook scripts (session management, safety guards)
 - `templates/` - starter project-rule templates and REVIEW.md
 - `skills/` - domain-specific knowledge bundles (loaded on demand)
-- `rules/` - drop-in `.cursor/rules/` files
 - `scripts/` - diagnostic utilities (config drift validator, KV-cache stats)
 - `rules/*.mdc` - Cursor-specific policy overlays for plugin-provided runtime guidance
+- Runtime in target projects is applied via projected `.cursor/rules/*.mdc`, not by copying full `AGENTS.md`
 
 ## How agents should use this repo
 
@@ -25,7 +25,8 @@ When the user asks you to "set up this project" or "apply these principles":
    - Multi-agent work: Principle 01 (Harness Design) + Principle 06 (Multi-Agent Decomposition)
    - Iterative optimization: Principle 03 (Autoresearch)
 4. Before copying a principle, verify the user's stack matches the examples
-5. After setup, run `scripts/validate_config.py` to catch drift in the freshly assembled config
+5. Ask the user to run `/install-code-config`; do not auto-run install as an agent action
+6. After setup, run `scripts/validate_config.py` to catch drift in the freshly assembled config
 
 ## Style conventions for this repo
 
@@ -52,6 +53,10 @@ python scripts/validate_config.py
 
 Expected output: `[config-validator] OK: N files, no drift detected`.
 
+For plugin runtime activation in a target project, the user runs `/install-code-config`; then verify with:
+- `python scripts/doctor.py`
+- `python scripts/check_deterministic_gates.py --evidence-mode auto`
+
 ## Context engineering notes
 
 This file is designed for KV-cache efficiency and the 150-line AGENTS.md standard:
@@ -60,7 +65,7 @@ This file is designed for KV-cache efficiency and the 150-line AGENTS.md standar
 - No timestamps or dynamic content
 - Stable section order - do not shuffle
 - Append-only edits preferred over restructuring
-- For Cursor-specific runtime policies, use `rules/*.mdc`
+- For Cursor-specific runtime policies, use `rules/*.mdc` and project them via install flow
 
 ## Related standards
 

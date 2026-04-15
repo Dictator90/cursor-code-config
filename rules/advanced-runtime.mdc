@@ -1,0 +1,17 @@
+---
+description: Advanced runtime profile for long sessions and team workflows.
+alwaysApply: true
+---
+
+# Advanced Runtime
+
+For multi-session or team-critical tasks:
+
+- Keep handoffs append-only in `.cursor/handoffs/`.
+- Prefer explicit status checkpoints on long tasks.
+- Use deterministic checks before merge-sensitive changes.
+
+Operational guidance:
+
+- Treat plugin docs as source-of-truth, project `.cursor/rules/*.mdc` as runtime contract.
+- Avoid broad policy copy; project should keep only required runtime rules.

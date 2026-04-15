@@ -21,17 +21,12 @@ def pick(script_name): \
   found=next((p for p in candidates if p.exists()), None); \
   if found is None: raise SystemExit(f'Missing required script: {script_name}'); \
   return found; \
-apply_script=pick('apply_baseline.py'); \
-add_hook_script=pick('add_hook.py'); \
-doctor_script=pick('doctor.py'); \
-subprocess.run([sys.executable, str(apply_script)], check=True); \
-hooks=root/'.cursor/hooks.json'; \
-for name in ['session-drift-validator','session-handoff-check','destructive-command-guard','secret-leak-guard','session-handoff-reminder']: \
-  subprocess.run([sys.executable, str(add_hook_script), name, '--hooks-config', str(hooks)], check=True); \
-subprocess.run([sys.executable, str(doctor_script)], check=True); \
-print('install-code-config completed')"
+install_script=pick('install_code_config.py'); \
+subprocess.run([sys.executable, str(install_script)], check=True)"
 ```
 
 After running:
-- Show output from baseline, hooks setup, and doctor.
+- Show output from baseline, hooks setup, doctor, and deterministic gates.
 - Confirm `.cursor/hooks.json` was updated in the current project.
+- Confirm `.cursor/rules/*.mdc` runtime pack and `.cursor/.code-config-install.json` were created in the current project.
+- Confirm `python scripts/check_deterministic_gates.py --evidence-mode auto` completed.

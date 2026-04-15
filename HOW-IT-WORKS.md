@@ -4,6 +4,8 @@ How each technology in this configuration system actually works, with real examp
 
 If you read the [README](README.md) and thought "okay but HOW does this work mechanically?" - this page is for you.
 
+> Scope note: this plugin is a Cursor adaptation of the original system, not a strict 1:1 clone of every upstream mechanism. Runtime baseline focuses on deterministic install, rules, hooks, and checks. Some upstream concepts remain documentation-level guidance rather than enforced runtime requirements.
+
 ---
 
 ## Rules: Conditional Context Injection

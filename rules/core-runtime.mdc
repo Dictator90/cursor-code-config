@@ -1,0 +1,21 @@
+---
+description: Core runtime invariants for deterministic project setup.
+alwaysApply: true
+---
+
+# Core Runtime
+
+Use deterministic flow for plugin operations:
+
+1. Use `/install-code-config` as the primary onboarding flow.
+2. Keep runtime artifacts project-local under `.cursor/`.
+3. Verify results before completion:
+   - `python scripts/doctor.py`
+   - `python scripts/check_deterministic_gates.py --evidence-mode auto`
+
+Safety constraints:
+- `/install-code-config` is user-run only; do not execute it automatically as an agent action.
+- If setup is needed, provide exact command(s) and wait for user to run them.
+- Do not run destructive commands without explicit user confirmation.
+- Do not claim success without command outputs.
+- If checks fail, report exact failing check and fix path.

@@ -35,9 +35,9 @@
     "privacyPolicyURL": "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
     "termsOfServiceURL": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
     "defaultPrompt": [
-      "Apply Cursor-only baseline to this repository.",
+      "Assess Cursor baseline status for this repository.",
       "Run plugin doctor and show failing checks.",
-      "Create missing baseline files and verify deterministic gates."
+      "Guide the user to run /install-code-config, then verify deterministic gates."
     ],
     "brandColor": "#2563EB"
   }

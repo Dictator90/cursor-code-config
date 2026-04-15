@@ -14,14 +14,15 @@ This repository is a **single plugin** (`cursor-config-hardening`) with principl
 - `rules/` + `.cursor/rules/` - runtime guidance and continuity protocol.
 - `scripts/` - deterministic setup and verification (`apply_baseline.py`, `doctor.py`, validators).
 - `commands/` - production onboarding command and validation utilities.
-- `skills/` - domain skill catalog + `CURSOR-HARDENING` operational skill.
+- `skills/` - domain skill catalog for specialized workflows.
 
 ## Quick Start (for project users)
 
 1. Open your target project in Cursor.
 2. Connect/install this plugin (`cursor-config-hardening`).
-3. Run single onboarding command:
+3. Run single onboarding command (user action):
    - `/install-code-config`
+   - Agent should not auto-run install; it should instruct and then verify.
 4. Validate after install (optional but recommended):
    - `/check-cursor-only-surface`
    - `/validate-config-strict`
@@ -30,13 +31,16 @@ This repository is a **single plugin** (`cursor-config-hardening`) with principl
 
 These commands are provided by `commands/` in this plugin:
 
-- `/install-code-config` -> baseline + hooks + doctor in one run
+- `/install-code-config` -> baseline + hooks + doctor + deterministic gates
 - `/check-cursor-only-surface` -> `python scripts/check_cursor_only_surface.py`
 - `/validate-config-strict` -> `python scripts/validate_config.py --strict`
+- Install commands are executed by the user; agent role is guidance + verification.
 
 ## Where Files Are Written
 
 - **Written in the current project** (safe/project-local):
+  - `.cursor/rules/*.mdc` runtime rule pack (projected from plugin `rules/`)
+  - `.cursor/.code-config-install.json` (profile/version stamp for drift checks)
   - `.cursor/.supply-chain-policy.json` (enable/disable checks, min age days, ignore lists per ecosystem)
   - session continuity files in `.cursor/handoffs/` (when using handoff flow)
 - **Written in the current project** (safe/project-local):
@@ -45,16 +49,18 @@ These commands are provided by `commands/` in this plugin:
 
 `scripts/apply_baseline.py`, `scripts/add_hook.py`, and `scripts/doctor.py` are project-root based (`Path.cwd()`), so all runtime files are created/checked in the active project.
 
-## About Extra Skill vs Original
+## Source vs Runtime
 
-`skills/CURSOR-HARDENING/SKILL.md` is an additional Cursor operational helper.  
-It is intentionally added to improve setup UX and deterministic rollout; it does not replace or conflict with the original logic from the article.
+- `AGENTS.md` is source-of-truth policy/documentation in this plugin repo.
+- Runtime behavior in target projects is enforced by projected `.cursor/rules/*.mdc` + hooks + policy files.
+- Do not copy full `AGENTS.md` into target projects; keep runtime pack minimal and deterministic.
 
 ## Safety/Compatibility Notes
 
 - Plugin manifest: `.cursor-plugin/plugin.json`
+- Canonical plugin metadata lives in `.cursor-plugin/plugin.json`; `.cursor/plugin.json` is a compatibility mirror and must stay in sync.
 - Plugin commands: `commands/`
-- Plugin remains root-scoped (`.`) via `.cursor-plugin/marketplace.json` and `.agents/plugins/marketplace.json`.
+- Plugin remains root-scoped (`.`) via `.cursor-plugin/marketplace.json`.
 - Hooks are not auto-injected silently; they are added explicitly during `/install-code-config`.
 
 ## Migration Note

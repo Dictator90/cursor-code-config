@@ -13,8 +13,12 @@ TARGETS = [
     Path("AGENTS.md"),
     Path("templates/README.md"),
     Path("hooks/README.md"),
+    Path("rules/core-runtime.mdc"),
+    Path("rules/skill-routing.mdc"),
+    Path("rules/skill-enforcement.mdc"),
     Path("rules/session-handoff.mdc"),
     Path("rules/memory-crosslinks.mdc"),
+    Path("rules/advanced-runtime.mdc"),
 ]
 
 
