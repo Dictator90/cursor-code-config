@@ -126,15 +126,19 @@ def main():
                 drift_found.append(f"  {rel_config}: {path}")
 
     if drift_found:
-        lines = ["[config-drift] Found stale references:"]
-        lines.extend(drift_found[:20])
-        if len(drift_found) > 20:
-            lines.append(f"  ... and {len(drift_found) - 20} more")
-        print("\n".join(lines), file=sys.stderr)
-        print(json.dumps({"decision": "allow", "reason": f"[config-drift] stale references found: {len(drift_found)}"}))
+        preview = "; ".join(drift_found[:3])
+        if len(drift_found) > 3:
+            preview += f"; ... and {len(drift_found) - 3} more"
+        print(
+            json.dumps(
+                {
+                    "decision": "allow",
+                    "reason": f"[config-drift] stale references found: {len(drift_found)} ({preview})",
+                }
+            )
+        )
     else:
         summary = f"[config-drift] OK: {len(config_files)} files, no drift detected"
-        print(summary, file=sys.stderr)
         print(json.dumps({"decision": "allow", "reason": summary}))
 
 

@@ -109,12 +109,12 @@ def main() -> int:
         lines.append("")
 
     if lines:
-        print("\n".join(lines), file=sys.stderr)
+        preview_names = ", ".join(path.name for _, path in recent)
         print(
             json.dumps(
                 {
                     "decision": "allow",
-                    "reason": f"Found {len(found_handoffs)} recent handoff(s); preview emitted to stderr",
+                    "reason": f"Found {len(found_handoffs)} recent handoff(s): {preview_names}",
                 }
             )
         )
