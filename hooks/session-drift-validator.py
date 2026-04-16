@@ -19,6 +19,7 @@ Register in Cursor settings:
 }
 """
 
+import json
 import os
 import re
 import sys
@@ -107,6 +108,7 @@ def main():
     config_files = find_config_files(cwd)
 
     if not config_files:
+        print(json.dumps({"decision": "allow", "reason": "[config-drift] no config files found"}))
         return
 
     drift_found = []
@@ -124,13 +126,16 @@ def main():
                 drift_found.append(f"  {rel_config}: {path}")
 
     if drift_found:
-        print("[config-drift] Found stale references:")
-        for d in drift_found[:20]:  # Cap output to avoid noise
-            print(d)
+        lines = ["[config-drift] Found stale references:"]
+        lines.extend(drift_found[:20])
         if len(drift_found) > 20:
-            print(f"  ... and {len(drift_found) - 20} more")
+            lines.append(f"  ... and {len(drift_found) - 20} more")
+        print("\n".join(lines), file=sys.stderr)
+        print(json.dumps({"decision": "allow", "reason": f"[config-drift] stale references found: {len(drift_found)}"}))
     else:
-        print(f"[config-drift] OK: {len(config_files)} files, no drift detected")
+        summary = f"[config-drift] OK: {len(config_files)} files, no drift detected"
+        print(summary, file=sys.stderr)
+        print(json.dumps({"decision": "allow", "reason": summary}))
 
 
 if __name__ == "__main__":

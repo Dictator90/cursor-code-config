@@ -19,6 +19,7 @@ Register in ~/.cursor/settings.json:
 """
 from __future__ import annotations
 
+import json
 import sys
 import time
 from pathlib import Path
@@ -108,7 +109,17 @@ def main() -> int:
         lines.append("")
 
     if lines:
-        print("\n".join(lines))
+        print("\n".join(lines), file=sys.stderr)
+        print(
+            json.dumps(
+                {
+                    "decision": "allow",
+                    "reason": f"Found {len(found_handoffs)} recent handoff(s); preview emitted to stderr",
+                }
+            )
+        )
+    else:
+        print(json.dumps({"decision": "allow"}))
     return 0
 
 
