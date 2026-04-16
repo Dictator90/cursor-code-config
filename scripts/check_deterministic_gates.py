@@ -18,11 +18,11 @@ DEFAULT_REQUIRED_EVIDENCE = (
     "T03-safety-guards.json",
     "T07-supply-chain.json",
 )
-LATEST_RUN_POINTER = ROOT / ".cursor" / "tasks" / "runs" / "LATEST"
+LATEST_RUN_POINTER_REL = Path(".cursor") / "tasks" / "runs" / "LATEST"
 
 
-def _run(command: list[str]) -> dict[str, Any]:
-    process = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+def _run(command: list[str], cwd: Path) -> dict[str, Any]:
+    process = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
     return {
         "command": " ".join(command),
         "returncode": process.returncode,
@@ -32,16 +32,17 @@ def _run(command: list[str]) -> dict[str, Any]:
     }
 
 
-def _resolve_run_dir(run_dir: Path | None, run_id: str | None) -> Path | None:
+def _resolve_run_dir(run_dir: Path | None, run_id: str | None, project_root: Path) -> Path | None:
     if run_dir is not None:
-        return run_dir if run_dir.is_absolute() else (ROOT / run_dir)
+        return run_dir if run_dir.is_absolute() else (project_root / run_dir)
     if run_id:
-        return ROOT / ".cursor" / "tasks" / "runs" / run_id
+        return project_root / ".cursor" / "tasks" / "runs" / run_id
 
-    if not LATEST_RUN_POINTER.exists():
+    latest_run_pointer = project_root / LATEST_RUN_POINTER_REL
+    if not latest_run_pointer.exists():
         return None
 
-    lines = [line.strip() for line in LATEST_RUN_POINTER.read_text(encoding="utf-8").splitlines() if line.strip()]
+    lines = [line.strip() for line in latest_run_pointer.read_text(encoding="utf-8").splitlines() if line.strip()]
     if not lines:
         return None
     candidate = Path(lines[0])
@@ -65,18 +66,22 @@ def _evidence_checks(evidence_dir: Path, required_files: tuple[str, ...]) -> lis
 
 
 def run_checks(
+    project_root: Path,
     run_dir: Path | None,
     evidence_mode: str,
     required_evidence: tuple[str, ...],
 ) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
+    scripts_dir = ROOT / "scripts"
 
-    checks.append(_run([sys.executable, "scripts/validate_config.py"]))
-    checks.append(_run([sys.executable, "scripts/check_safety_guards.py"]))
-    checks.append(_run([sys.executable, "scripts/check_supply_chain_gates.py"]))
-    checks.append(_run([sys.executable, "scripts/check_markdown_links.py"]))
-    checks.append(_run([sys.executable, "scripts/check_cursor_only_surface.py"]))
-    checks.append(_run([sys.executable, "scripts/check_plugin_submission.py"]))
+    checks.append(_run([sys.executable, str(scripts_dir / "validate_config.py")], cwd=project_root))
+    checks.append(_run([sys.executable, str(scripts_dir / "check_safety_guards.py")], cwd=project_root))
+    checks.append(_run([sys.executable, str(scripts_dir / "check_supply_chain_gates.py")], cwd=project_root))
+    # Plugin-surface checks are meaningful only when validating the plugin repo itself.
+    if project_root.resolve() == ROOT.resolve():
+        checks.append(_run([sys.executable, str(scripts_dir / "check_markdown_links.py")], cwd=project_root))
+        checks.append(_run([sys.executable, str(scripts_dir / "check_cursor_only_surface.py")], cwd=project_root))
+        checks.append(_run([sys.executable, str(scripts_dir / "check_plugin_submission.py")], cwd=project_root))
 
     evidence_status = "skipped"
     evidence_dir = None
@@ -133,10 +138,18 @@ def main() -> int:
         "required: fail if run/evidence data missing; skip: do not check evidence files.",
     )
     parser.add_argument("--output", type=Path, required=False, help="Optional output JSON path.")
+    parser.add_argument(
+        "--project-root",
+        type=Path,
+        required=False,
+        help="Project root to validate. Defaults to current working directory.",
+    )
     args = parser.parse_args()
 
-    resolved_run_dir = _resolve_run_dir(run_dir=args.run_dir, run_id=args.run_id)
+    project_root = (args.project_root.resolve() if args.project_root else Path.cwd().resolve())
+    resolved_run_dir = _resolve_run_dir(run_dir=args.run_dir, run_id=args.run_id, project_root=project_root)
     result = run_checks(
+        project_root=project_root,
         run_dir=resolved_run_dir,
         evidence_mode=args.evidence_mode,
         required_evidence=DEFAULT_REQUIRED_EVIDENCE,

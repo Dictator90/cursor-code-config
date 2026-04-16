@@ -19,7 +19,14 @@ def pick(script_name: str, root: Path, plugin_root: Path | None) -> Path:
     if local.exists():
         return local
 
-    # 2) Installed plugins under ~/.cursor/plugins/
+    # 2) If this launcher lives in a plugin tree, prefer that tree.
+    # This avoids accidentally selecting an outdated plugin copy.
+    if plugin_root is not None:
+        in_place = plugin_root / "scripts" / script_name
+        if in_place.exists():
+            return in_place
+
+    # 3) Installed plugins under ~/.cursor/plugins/
     plugins = Path.home() / ".cursor" / "plugins"
     candidates: list[Path] = []
     if plugins.exists():
@@ -27,10 +34,6 @@ def pick(script_name: str, root: Path, plugin_root: Path | None) -> Path:
         candidates.extend(sorted(plugins.glob(f"local/*/scripts/{script_name}")))
         # any/*/scripts/<script_name>
         candidates.extend(sorted(plugins.glob(f"*/scripts/{script_name}")))
-
-    # 3) Fallback to plugin_root/scripts if available (running inside plugin repo)
-    if plugin_root is not None:
-        candidates.append(plugin_root / "scripts" / script_name)
 
     found = next((p for p in candidates if p.exists()), None)
     if found is None:

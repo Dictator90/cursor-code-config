@@ -38,7 +38,7 @@ def main() -> int:
     for hook_name in REQUIRED_HOOK_NAMES:
         _run(add_hook_script, hook_name, "--hooks-config", str(hooks_path))
     _run(doctor_script)
-    _run(deterministic_script, "--evidence-mode", "auto")
+    _run(deterministic_script, "--evidence-mode", "auto", "--project-root", str(project_root))
     print("install-code-config completed")
     return 0
 
