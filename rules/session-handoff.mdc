@@ -23,3 +23,5 @@ Quality constraints:
 - Keep handoff under 1500 tokens.
 - Prefer current state over tool-by-tool history.
 - Keep handoff files append-only; do not rewrite old entries.
+- Keep `What did NOT work` deduplicated: merge semantically identical failures into one line.
+- Do not repeat transient shell one-liner parsing noise (for example `python -c` `SyntaxError`) if it does not change current state or next step.

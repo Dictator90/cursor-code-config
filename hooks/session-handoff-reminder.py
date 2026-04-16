@@ -97,7 +97,10 @@ def main() -> int:
             f"File name: YYYY-MM-DD_HH-MM_<session-short-id>.md. "
             f"Keep it under 1500 tokens. Must include: goal, what was done, "
             f"what did NOT work (with reasons), current state, key decisions, "
-            f"single next step. Update .cursor/handoffs/INDEX.md (append). "
+            f"single next step. Keep 'What did NOT work' deduplicated and do not "
+            f"repeat transient python -c one-liner SyntaxError noise unless it "
+            f"changes current state or next step. "
+            f"Update .cursor/handoffs/INDEX.md (append). "
             f"After writing, you may end the session normally."
         ),
     }
