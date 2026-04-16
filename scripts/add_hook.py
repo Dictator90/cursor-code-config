@@ -9,7 +9,6 @@ Usage examples:
   python scripts/add_hook.py session-handoff-check
 
 By default this script updates .cursor/hooks.json in current project
-and copies required scripts to .cursor/hooks/.
 Plugin-level hooks/hooks.json is baseline metadata; runtime source of truth
 is always project-local .cursor/hooks.json.
 """
@@ -18,7 +17,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 from pathlib import Path
 from typing import Any
 
@@ -90,14 +88,11 @@ def save_hooks_config(path: Path, config: dict[str, Any]) -> None:
     path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
 
-def ensure_project_hook_script(script_name: str, project_root: Path) -> Path:
+def ensure_plugin_hook_script(script_name: str) -> Path:
     source = repo_root() / "hooks" / script_name
     if not source.exists():
         raise FileNotFoundError(f"Hook script not found: {source}")
-    dest = project_root / ".cursor" / "hooks" / script_name
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, dest)
-    return dest
+    return source
 
 
 def hook_exists(event_list: list[dict[str, Any]], hook_entry: dict[str, Any]) -> bool:
@@ -111,18 +106,17 @@ def hook_exists(event_list: list[dict[str, Any]], hook_entry: dict[str, Any]) ->
     return False
 
 
-def add_hook(config: dict[str, Any], spec: dict[str, Any], project_root: Path, python_bin: str) -> bool:
+def add_hook(config: dict[str, Any], spec: dict[str, Any], python_bin: str) -> bool:
     hooks_obj = config.setdefault("hooks", {})
     event = spec["event"]
     matcher = spec["matcher"]
     script_name = spec["script"]
     script_args = spec.get("args", [])
 
-    ensure_project_hook_script(script_name, project_root)
+    script_path = ensure_plugin_hook_script(script_name)
     entry: dict[str, Any] = {
-        # Project hooks run from project root, so keep command paths relative
-        # for portability across machines and CI workspaces.
-        "command": f'{python_bin} ".cursor/hooks/{script_name}"'
+        # Keep hook scripts in plugin install tree; do not copy .py files into projects.
+        "command": f'{python_bin} "{script_path}"'
         + (f' {" ".join(script_args)}' if script_args else ""),
     }
     if matcher is not None:
@@ -169,8 +163,7 @@ def main() -> int:
     hooks_config_path = Path(args.hooks_config).expanduser()
     hooks_config = load_hooks_config(hooks_config_path)
     specs = hook_specs()
-    project_root = hooks_config_path.parent.parent
-    changed = add_hook(hooks_config, specs[args.hook_name], project_root, args.python_bin)
+    changed = add_hook(hooks_config, specs[args.hook_name], args.python_bin)
 
     save_hooks_config(hooks_config_path, hooks_config)
 

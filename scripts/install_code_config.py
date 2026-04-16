@@ -10,11 +10,7 @@ from pathlib import Path
 from runtime_contract import REQUIRED_HOOK_NAMES
 
 
-def _pick_script(script_name: str, project_root: Path) -> Path:
-    local = project_root / "scripts" / script_name
-    if local.exists():
-        return local
-
+def _pick_script(script_name: str) -> Path:
     plugin_root = Path(__file__).resolve().parents[1]
     candidate = plugin_root / "scripts" / script_name
     if candidate.exists():
@@ -28,10 +24,10 @@ def _run(script_path: Path, *args: str) -> None:
 
 def main() -> int:
     project_root = Path.cwd()
-    apply_script = _pick_script("apply_baseline.py", project_root)
-    add_hook_script = _pick_script("add_hook.py", project_root)
-    doctor_script = _pick_script("doctor.py", project_root)
-    deterministic_script = _pick_script("check_deterministic_gates.py", project_root)
+    apply_script = _pick_script("apply_baseline.py")
+    add_hook_script = _pick_script("add_hook.py")
+    doctor_script = _pick_script("doctor.py")
+    deterministic_script = _pick_script("check_deterministic_gates.py")
     hooks_path = project_root / ".cursor" / "hooks.json"
 
     _run(apply_script)

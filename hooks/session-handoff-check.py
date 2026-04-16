@@ -4,9 +4,6 @@
 Runs at the start of every Cursor session. If recent handoff files
 exist, prints them so the agent sees them and can offer to continue.
 
-Supports both old (.cursor/HANDOFF.md) and new (.cursor/handoffs/*.md) formats.
-Canonical protocol is append-only `.cursor/handoffs/*.md` with `INDEX.md`.
-
 Register in ~/.cursor/settings.json:
 {
   "hooks": {
@@ -71,8 +68,7 @@ def main() -> int:
 
     lines: list[str] = []
 
-    # Check for handoffs - new multi-session format first
-    handoff_old = legacyagent_dir / "HANDOFF.md"
+    # Check for handoffs in canonical multi-session format.
     found_handoffs: list[tuple[float, Path]] = []
 
     now = time.time()
@@ -84,12 +80,6 @@ def main() -> int:
             age_hours = (now - p.stat().st_mtime) / 3600
             if age_hours <= MAX_AGE_HOURS:
                 found_handoffs.append((p.stat().st_mtime, p))
-
-    # Fallback: old single HANDOFF.md
-    if not found_handoffs and handoff_old.exists():
-        age_hours = (now - handoff_old.stat().st_mtime) / 3600
-        if age_hours <= MAX_AGE_HOURS:
-            found_handoffs.append((handoff_old.stat().st_mtime, handoff_old))
 
     if found_handoffs:
         # Sort by mtime descending (newest first), take top N

@@ -23,17 +23,17 @@ REQUIRED_HOOK_NAMES = (
 
 EXPECTED_RUNTIME_HOOKS = {
     "sessionStart": (
-        (".cursor/hooks/session-drift-validator.py",),
-        (".cursor/hooks/session-handoff-check.py",),
+        ("session-drift-validator.py",),
+        ("session-handoff-check.py",),
     ),
     "preToolUse": (
-        (".cursor/hooks/destructive-command-guard.py",),
-        (".cursor/hooks/secret-leak-guard.py",),
+        ("destructive-command-guard.py",),
+        ("secret-leak-guard.py",),
     ),
     "stop": (
-        (".cursor/hooks/session-handoff-reminder.py", "--trigger stop"),
+        ("session-handoff-reminder.py", "--trigger stop"),
     ),
     "preCompact": (
-        (".cursor/hooks/session-handoff-reminder.py", "--trigger precompact"),
+        ("session-handoff-reminder.py", "--trigger precompact"),
     ),
 }

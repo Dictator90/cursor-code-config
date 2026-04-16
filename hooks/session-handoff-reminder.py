@@ -5,9 +5,6 @@ Blocks the agent from stopping or compacting context (via JSON response)
 if the session has been running long enough and no fresh handoff exists.
 Reminds once per trigger per session to avoid infinite loops.
 
-Supports both old (.cursor/HANDOFF.md) and new (.cursor/handoffs/*.md) formats.
-Canonical protocol is append-only `.cursor/handoffs/*.md` with `INDEX.md`.
-
 Register in ~/.cursor/settings.json:
 {
   "hooks": {
@@ -94,8 +91,7 @@ def main() -> int:
     if not legacyagent_dir.exists():
         return 0  # not a Cursor project
 
-    # Support both old (HANDOFF.md) and new (handoffs/*.md) formats
-    handoff_old = legacyagent_dir / "HANDOFF.md"
+    # Canonical handoff protocol: append-only .cursor/handoffs/*.md
     handoffs_dir = legacyagent_dir / "handoffs"
     reminder = legacyagent_dir / _marker_name(args.trigger)
     session_marker = legacyagent_dir / ".session-start"
@@ -112,14 +108,9 @@ def main() -> int:
     if age < SESSION_MIN_MINUTES:
         return 0  # short session, no handoff needed
 
-    # Check if handoff is fresh - either format counts
+    # Check if handoff is fresh in the canonical multi-file format.
     fresh = False
-    # Old format: single HANDOFF.md
-    if handoff_old.exists():
-        if (time.time() - handoff_old.stat().st_mtime) / 60 < HANDOFF_STALE_MINUTES:
-            fresh = True
-    # New format: any .md in handoffs/ (except INDEX.md)
-    if not fresh and handoffs_dir.exists():
+    if handoffs_dir.exists():
         for p in handoffs_dir.glob("*.md"):
             if p.name == "INDEX.md":
                 continue
