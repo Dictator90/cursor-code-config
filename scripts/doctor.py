@@ -16,7 +16,7 @@ def _hooks_config_has_expected_entries(path: Path) -> bool:
     if not isinstance(hooks_obj, dict):
         return False
 
-    for event, scripts in EXPECTED_RUNTIME_HOOKS.items():
+    for event, expected_commands in EXPECTED_RUNTIME_HOOKS.items():
         event_entries = hooks_obj.get(event)
         if not isinstance(event_entries, list):
             return False
@@ -25,9 +25,11 @@ def _hooks_config_has_expected_entries(path: Path) -> bool:
             for entry in event_entries
             if isinstance(entry, dict)
         }
-        for script_name in scripts:
-            expected_fragment = f".cursor/hooks/{script_name}"
-            if not any(expected_fragment in command for command in event_commands):
+        for expected_fragments in expected_commands:
+            if not any(
+                all(fragment in command for fragment in expected_fragments)
+                for command in event_commands
+            ):
                 return False
     return True
 

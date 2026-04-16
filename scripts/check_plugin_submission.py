@@ -164,6 +164,14 @@ def main() -> int:
             non_empty = bool(is_map and hooks_obj)
             checks.append(_check(is_map, "hooks_component_schema", "hooks must be an object keyed by event"))
             checks.append(_check(non_empty, "hooks_component_non_empty", f"events: {list(hooks_obj.keys()) if is_map else []}"))
+            has_precompact = bool(is_map and "preCompact" in hooks_obj)
+            checks.append(
+                _check(
+                    has_precompact,
+                    "hooks_component_has_precompact_handoff",
+                    "hooks/hooks.json should register a preCompact handoff reminder",
+                )
+            )
 
     if README_PATH.exists():
         readme_text = README_PATH.read_text(encoding="utf-8")

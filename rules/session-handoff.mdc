@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Session Handoff
 
-When user asks to prepare/save/write handoff, or session closes after long work:
+When user asks to prepare/save/write handoff, session closes after long work, or runtime requests a handoff before `preCompact`:
 
 1. Write `.cursor/handoffs/YYYY-MM-DD_HH-MM_<session-short-id>.md`.
 2. Append one line to `.cursor/handoffs/INDEX.md`.

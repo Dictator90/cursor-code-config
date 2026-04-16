@@ -50,7 +50,7 @@ def main() -> int:
         )
 
     # Reset per-session markers (so Stop hook can remind again this session)
-    for marker in (".handoff-reminded", ".session-start"):
+    for marker in (".handoff-reminded", ".handoff-reminded-precompact", ".session-start"):
         m = legacyagent_dir / marker
         if m.exists():
             m.unlink()

@@ -40,7 +40,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .cursor/hooks/session-handoff-reminder.py"
+            "command": "python .cursor/hooks/session-handoff-reminder.py --trigger stop"
+          }
+        ]
+      }
+    ],
+    "preCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .cursor/hooks/session-handoff-reminder.py --trigger precompact"
           }
         ]
       }

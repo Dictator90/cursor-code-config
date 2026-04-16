@@ -43,6 +43,13 @@ def hook_specs() -> dict[str, dict[str, Any]]:
             "event": "stop",
             "matcher": None,
             "script": "session-handoff-reminder.py",
+            "args": ["--trigger", "stop"],
+        },
+        "session-handoff-precompact": {
+            "event": "preCompact",
+            "matcher": None,
+            "script": "session-handoff-reminder.py",
+            "args": ["--trigger", "precompact"],
         },
         "session-handoff-check": {
             "event": "sessionStart",
@@ -109,12 +116,14 @@ def add_hook(config: dict[str, Any], spec: dict[str, Any], project_root: Path, p
     event = spec["event"]
     matcher = spec["matcher"]
     script_name = spec["script"]
+    script_args = spec.get("args", [])
 
     ensure_project_hook_script(script_name, project_root)
     entry: dict[str, Any] = {
         # Project hooks run from project root, so keep command paths relative
         # for portability across machines and CI workspaces.
-        "command": f'{python_bin} ".cursor/hooks/{script_name}"',
+        "command": f'{python_bin} ".cursor/hooks/{script_name}"'
+        + (f' {" ".join(script_args)}' if script_args else ""),
     }
     if matcher is not None:
         entry["matcher"] = matcher
@@ -136,6 +145,7 @@ def main() -> int:
         choices=[
             "session-drift-validator",
             "session-handoff-reminder",
+            "session-handoff-precompact",
             "session-handoff-check",
             "destructive-command-guard",
             "secret-leak-guard",
