@@ -26,6 +26,17 @@ import sys
 import time
 from pathlib import Path
 
+
+def _ensure_utf8_stdout() -> None:
+    """Best-effort switch stdout to UTF-8 to avoid Windows cp1251 crashes."""
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            # Python 3.7+
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        # Fail open: at worst we keep default encoding
+        pass
+
 # How many recent handoffs to show (by mtime)
 MAX_HANDOFFS = 3
 # Only show handoffs newer than this (hours)
@@ -33,6 +44,7 @@ MAX_AGE_HOURS = 168  # 7 days
 
 
 def main() -> int:
+    _ensure_utf8_stdout()
     cwd = Path.cwd()
     legacyagent_dir = cwd / ".cursor"
     handoffs_dir = legacyagent_dir / "handoffs"
